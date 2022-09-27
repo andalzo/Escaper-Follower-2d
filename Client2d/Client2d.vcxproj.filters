@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Follower.cpp">
+      <Filter>Follower</Filter>
+    </ClCompile>
+    <ClCompile Include="ForceFollowMission.cpp">
+      <Filter>Follower</Filter>
+    </ClCompile>
+    <ClCompile Include="PounceMission.cpp">
+      <Filter>Follower</Filter>
+    </ClCompile>
+    <ClCompile Include="Escaper.cpp">
+      <Filter>Escaper</Filter>
+    </ClCompile>
+    <ClCompile Include="EscapeMission.cpp">
+      <Filter>Escaper\Missions</Filter>
+    </ClCompile>
+    <ClCompile Include="WayPointMission.cpp">
+      <Filter>Escaper\Missions</Filter>
+    </ClCompile>
+    <ClCompile Include="WaypointCreator.cpp">
+      <Filter>Escaper\Utility</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Follower.h">
+      <Filter>Follower</Filter>
+    </ClInclude>
+    <ClInclude Include="ForceFollowMission.h">
+      <Filter>Follower</Filter>
+    </ClInclude>
+    <ClInclude Include="PounceMission.h">
+      <Filter>Follower</Filter>
+    </ClInclude>
+    <ClInclude Include="Escaper.h">
+      <Filter>Escaper</Filter>
+    </ClInclude>
+    <ClInclude Include="EscapeMission.h">
+      <Filter>Escaper\Missions</Filter>
+    </ClInclude>
+    <ClInclude Include="WaypointCreator.h">
+      <Filter>Escaper\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="WayPointMission.h">
+      <Filter>Escaper\Missions</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Escaper">
+      <UniqueIdentifier>{90f8965a-4749-421a-8eba-0150bfea0e60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Follower">
+      <UniqueIdentifier>{d02216d8-3983-438f-9ef0-fd0c5f9b4af6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Escaper\Missions">
+      <UniqueIdentifier>{f6f6ed02-cf8d-49d9-bf29-3fb9d6eec1ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Escaper\Utility">
+      <UniqueIdentifier>{98276bbe-1c6a-4b9e-878e-7ce426756569}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Follower\Missions">
+      <UniqueIdentifier>{c6c19022-8fe0-459e-a733-3587f0335bc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Follower\Utility">
+      <UniqueIdentifier>{2b2ed2db-2aa1-4c8c-b1e8-32381bb06cda}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
