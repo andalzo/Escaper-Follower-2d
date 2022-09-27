@@ -1,11 +1,15 @@
 #include "Escaper.h"
 
-namespace Cevheri::Net
+namespace Simulation2d::Net
 {
 	Escaper::Escaper()
 	{
 		sAppName = "Escaper2d";
-		m_sDroneDesc.type = Flight::Drone::Type::Escaper;
+		m_sObject2dDesc.type = Flight::Object2d::Type::Escaper;
+		m_WayPointMission.SetObject2d(&m_sObject2dDesc);
+		
+		m_EscapeMission.SetObject2d(&m_sObject2dDesc);
+		m_EscapeMission.SetIfAchievable(true);
 	}
 	bool Escaper::OnUserCreate()
 	{
@@ -22,25 +26,33 @@ namespace Cevheri::Net
 	{
 		Clear(olc::BLACK);
 
-		if (!m_sDroneDesc.bPounced)
+		if (!m_sObject2dDesc.bPounced)
 		{
 			// Draw WayPoints
-			for (const auto& wayPoint : m_WayPoints)
+			for (const auto& wayPoint : m_WayPointMission.GetWayPoints())
 			{
 				tv.DrawCircle(wayPoint, 8.0);
 			}
 
-			WPM.ExecutePerFrame();
-			m_sDroneDesc = WPM.GetDrone();
-			std::cout << "New Position" << m_sDroneDesc.Position << "\n";
-			tv.DrawCircle(m_sDroneDesc.Position, m_sDroneDesc.fRadius, olc::GREEN);
+			m_WayPointMission.ExecutePerFrame();
+			//std::cout << "New Position" << m_sObject2dDesc.Position << "\n";
+			tv.DrawCircle(m_sObject2dDesc.Position, m_sObject2dDesc.fRadius, olc::GREEN);
 			
-			if (m_sDroneDesc.Velocity.mag2() > 0)
-				tv.DrawLine(m_sDroneDesc.Position, m_sDroneDesc.Position + m_sDroneDesc.Velocity.norm() * m_sDroneDesc.fRadius, olc::MAGENTA);
+			if (m_sObject2dDesc.Velocity.mag2() > 0)
+				tv.DrawLine(m_sObject2dDesc.Position, m_sObject2dDesc.Position + m_sObject2dDesc.Velocity.norm() * 
+				m_sObject2dDesc.fRadius, olc::MAGENTA);
+		}
+		else
+		{
+			m_EscapeMission.ExecutePerFrame();
+			//std::cout << "New Position" << m_sObject2dDesc.Position << "\n";
+			tv.DrawCircle(m_sObject2dDesc.Position, m_sObject2dDesc.fRadius, olc::GREEN);
+
+			if (m_sObject2dDesc.Velocity.mag2() > 0)
+				tv.DrawLine(m_sObject2dDesc.Position, m_sObject2dDesc.Position + m_sObject2dDesc.Velocity.norm() *
+					m_sObject2dDesc.fRadius, olc::MAGENTA);
 		}
 		
-
-
 		return true;
 	}
 	
@@ -54,7 +66,7 @@ namespace Cevheri::Net
 			std::cin.clear();
 			if (std::cin >> fSpeed)
 			{
-				m_sDroneDesc.SpeedPerFrame = fSpeed;
+				m_sObject2dDesc.SpeedPerFrame = fSpeed;
 				std::cout << "\n***WAYPOINT ENTRY MENU***\n\n";
 				std::cout << "Please select number to continue:\n";
 				std::cout << "1. Manual Entry (Give waypoints manually)\n";
@@ -107,8 +119,6 @@ namespace Cevheri::Net
 		std::cin.clear();
 		if (std::cin >> numberOfWayPoints)
 		{
-			Flight::WayPointMission WPM;
-			WPM.SetDrone(std::make_shared<Flight::Drone>(m_sDroneDesc));
 			for (int i = 0; i < numberOfWayPoints; i++)
 			{
 				olc::vf2d point;
@@ -116,10 +126,10 @@ namespace Cevheri::Net
 				std::cin >> point.x;
 				std::cout << "\nEnter y" << i + 1 << ":";
 				std::cin >> point.y;
-				WPM.AddWayPoint(point);
+				m_WayPointMission.AddWayPoint(point);
 			}
-			WPM.SetIfAchievable(true);
-			HandleUserEntryStartSimulation(WPM);
+			m_WayPointMission.SetIfAchievable(true);
+			HandleUserEntryStartSimulation();
 		}
 		else
 		{
@@ -139,11 +149,9 @@ namespace Cevheri::Net
 			{
 				std::vector<olc::vf2d> WayPoints;
 				WayPoints = Utility::CreateWayPoints(numberOfWayPointsBelowLimit, numberOfWayPointsUpperLimit);
-				Flight::WayPointMission WPM;
-				WPM.SetDrone(std::make_shared<Flight::Drone>(m_sDroneDesc));
-				WPM.SetWayPoints(WayPoints);
-				WPM.SetIfAchievable(true);
-				HandleUserEntryStartSimulation(WPM);
+				m_WayPointMission.SetWayPoints(WayPoints);
+				m_WayPointMission.SetIfAchievable(true);
+				HandleUserEntryStartSimulation();
 			}	
 		}
 		else
@@ -154,17 +162,15 @@ namespace Cevheri::Net
 	
 	void Escaper::HandleSimulationEntry()
 	{
-		Flight::WayPointMission WPM;
-		WPM.SetDrone(std::make_shared<Flight::Drone>(m_sDroneDesc));
 		//WPM Simulation Ýnitializition Here
-		WPM.AddWayPoint({ 30.0f,40.0f });
-		WPM.AddWayPoint({ 170.0f,40.0f });
-		WPM.AddWayPoint({ 170.0f,120.0f });
-		WPM.SetIfAchievable(true);
-		HandleUserEntryStartSimulation(WPM);
+		m_WayPointMission.AddWayPoint({ 30.0f,40.0f });
+		m_WayPointMission.AddWayPoint({ 170.0f,40.0f });
+		m_WayPointMission.AddWayPoint({ 170.0f,120.0f });
+		m_WayPointMission.SetIfAchievable(true);
+		HandleUserEntryStartSimulation();
 	}
 	
-	void Escaper::HandleUserEntryStartSimulation(const Flight::WayPointMission& WPM)
+	void Escaper::HandleUserEntryStartSimulation()
 	{
 		std::cout << "The way point mission created and assigned. The simulation will start.\n";
 		std::cout << "Do you agree?[y/n]\n";
@@ -174,8 +180,6 @@ namespace Cevheri::Net
 			if (input == 'y')
 			{
 				m_bWaitingForUserEntry = false;
-				m_WayPoints = WPM.GetWayPoints();
-				this->WPM = WPM; 
 				//TODO: This is ugly to handle missions inside Escaper, maybe better organization of mission classes 
 				//with singletons and enum approach work better
 

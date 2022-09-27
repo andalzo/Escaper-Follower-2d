@@ -1,52 +1,70 @@
 #include "EscapeMission.h"
 #include "WaypointCreator.h"
 
-namespace Cevheri::Flight
+namespace Simulation2d::Flight
 {
-	EscapeMission::EscapeMission(std::shared_ptr<Drone> d) : Mission(d)
+	EscapeMission::EscapeMission(Object2d* d) : Mission(d)
 	{
 	}
 
 	void EscapeMission::OnExecute()
 	{
-		olc::vf2d PossibleDirection;
-		PossibleDirection.x = Utility::RandomNumber(-1, 1);
-		PossibleDirection.y = Utility::RandomNumber(-1, 1);
+		if (m_ConstantDirectionFrameCounter == 50)
+		{
+			PossibleDirection.x = Utility::RandomNumber(-1, 1);
+			PossibleDirection.y = Utility::RandomNumber(-1, 1);
+			m_ptrObject2d->SpeedPerFrame = Utility::RandomNumber(1, 2);
+			m_ConstantDirectionFrameCounter = 0;
+			if (PossibleDirection == olc::vf2d{0, 0})
+			{
+				int chOne = Utility::RandomNumber(0, 1);
+				if (chOne == 0)
+				{
+					PossibleDirection.x = 1.0f;
+				}
+				else
+				{
+					PossibleDirection.y = 1.0f;
+				}
+			}
+		}
 
-		olc::vf2d PossibleVelocity = m_drone->SpeedPerFrame * PossibleDirection;
-		olc::vf2d PossiblePosition = m_drone->Position + PossibleVelocity;
+		olc::vf2d PossibleVelocity = m_ptrObject2d->SpeedPerFrame * PossibleDirection;
+		olc::vf2d PossiblePosition = m_ptrObject2d->Position + PossibleVelocity;
+		m_ConstantDirectionFrameCounter++;
 		
 		bool bIsCloseBorder = false;
 		if (PossiblePosition.x >= World_X_Limit)
 		{
-			PossiblePosition.x = World_X_Limit - m_drone->SpeedPerFrame;
+			PossiblePosition.x = World_X_Limit - m_ptrObject2d->SpeedPerFrame;
 			bIsCloseBorder = true;
 		}
 		if (PossiblePosition.x <= 0.0f)
 		{
-			PossiblePosition.x = m_drone->SpeedPerFrame;
+			PossiblePosition.x = m_ptrObject2d->SpeedPerFrame;
 			bIsCloseBorder = true;
 		}
 
 		if ((PossiblePosition.y >= World_Y_Limit))
 		{
-			PossiblePosition.y = World_Y_Limit - m_drone->SpeedPerFrame;
+			PossiblePosition.y = World_Y_Limit - m_ptrObject2d->SpeedPerFrame;
 			bIsCloseBorder = true;
 		}
 
 		if ((PossiblePosition.y <= 0.0f))
 		{
-			PossiblePosition.y = m_drone->SpeedPerFrame;
+			PossiblePosition.y = m_ptrObject2d->SpeedPerFrame;
 			bIsCloseBorder = true;
 		}
 
 		if (bIsCloseBorder)
 		{
-			m_drone->Velocity = PossiblePosition - m_drone->Position;
+			m_ptrObject2d->Velocity = PossiblePosition - m_ptrObject2d->Position;
 			bIsCloseBorder = true;
+			return;
 		}
 
-		m_drone->Velocity = PossibleVelocity;
+		m_ptrObject2d->Velocity = PossibleVelocity;
 	}
 
 

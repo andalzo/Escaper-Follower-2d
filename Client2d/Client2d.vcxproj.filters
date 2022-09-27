@@ -5,12 +5,6 @@
     <ClCompile Include="Follower.cpp">
       <Filter>Follower</Filter>
     </ClCompile>
-    <ClCompile Include="ForceFollowMission.cpp">
-      <Filter>Follower</Filter>
-    </ClCompile>
-    <ClCompile Include="PounceMission.cpp">
-      <Filter>Follower</Filter>
-    </ClCompile>
     <ClCompile Include="Escaper.cpp">
       <Filter>Escaper</Filter>
     </ClCompile>
@@ -23,15 +17,21 @@
     <ClCompile Include="WaypointCreator.cpp">
       <Filter>Escaper\Utility</Filter>
     </ClCompile>
+    <ClCompile Include="common2d.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="olcPGEX_TransformedView.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="ForceFollowMission.cpp">
+      <Filter>Follower\Missions</Filter>
+    </ClCompile>
+    <ClCompile Include="PounceMission.cpp">
+      <Filter>Follower\Missions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Follower.h">
-      <Filter>Follower</Filter>
-    </ClInclude>
-    <ClInclude Include="ForceFollowMission.h">
-      <Filter>Follower</Filter>
-    </ClInclude>
-    <ClInclude Include="PounceMission.h">
       <Filter>Follower</Filter>
     </ClInclude>
     <ClInclude Include="Escaper.h">
@@ -45,6 +45,21 @@
     </ClInclude>
     <ClInclude Include="WayPointMission.h">
       <Filter>Escaper\Missions</Filter>
+    </ClInclude>
+    <ClInclude Include="common2d.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="olcPGEX_TransformedView.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="olcPixelGameEngine.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="ForceFollowMission.h">
+      <Filter>Follower\Missions</Filter>
+    </ClInclude>
+    <ClInclude Include="PounceMission.h">
+      <Filter>Follower\Missions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -65,6 +80,9 @@
     </Filter>
     <Filter Include="Follower\Utility">
       <UniqueIdentifier>{2b2ed2db-2aa1-4c8c-b1e8-32381bb06cda}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{f6a9da02-860e-47ba-b1b6-31ded6f49b0f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

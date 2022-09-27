@@ -22,7 +22,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 #pragma once
 #include "net_connection.h"
 
-namespace Cevheri
+namespace Simulation2d
 {
 	namespace Net
 	{

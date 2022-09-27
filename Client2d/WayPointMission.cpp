@@ -1,8 +1,8 @@
 #include "WayPointMission.h"
 
-namespace Cevheri::Flight
+namespace Simulation2d::Flight
 {
-	WayPointMission::WayPointMission(std::shared_ptr<Drone> d, const std::vector<olc::vf2d> w): Mission(d)
+	WayPointMission::WayPointMission(Object2d* d, const std::vector<olc::vf2d> w): Mission(d)
 	{
 		m_WayPoints = w;
 		m_CurrentTargetPoint = m_WayPoints.at(0);
@@ -32,23 +32,23 @@ namespace Cevheri::Flight
 	void WayPointMission::OnExecute()
 	{
 		//Create the vector from our position to target position to obtain our possible velocity
-		olc::vf2d PossibleVelocity = (m_CurrentTargetPoint - m_drone->Position);
+		olc::vf2d PossibleVelocity = (m_CurrentTargetPoint - m_ptrObject2d->Position);
 		//Normalize the our velocity to ensure we headed correct direction in this frame
 		olc::vf2d PossibleDirection = PossibleVelocity.norm();
 		//We need magnitude of our possible velocity
 		float fDistanceToWayPoint = PossibleVelocity.mag();
 		//Examine if we can execute that velocity vector in that frame:
-		if (fDistanceToWayPoint <= m_drone->SpeedPerFrame)
+		if (fDistanceToWayPoint <= m_ptrObject2d->SpeedPerFrame)
 		{
 			//..if can, so our possible velocity is our new velocity
-			m_drone->Velocity = PossibleVelocity;
+			m_ptrObject2d->Velocity = PossibleVelocity;
 			UpdateTargetWayPoint();
 		}
 		else
 		{
 			//..if not, our new velocity should be headed to between our previous waypoint and 
 			//next waypoint
-			m_drone->Velocity = m_drone->SpeedPerFrame * PossibleDirection;
+			m_ptrObject2d->Velocity = m_ptrObject2d->SpeedPerFrame * PossibleDirection;
 		}
 	}
 

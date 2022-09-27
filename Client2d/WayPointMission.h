@@ -1,20 +1,20 @@
 #pragma once
-#include "Common/common2d.h"
+#include "common2d.h"
 
-namespace Cevheri::Flight
+namespace Simulation2d::Flight
 {
 
 	class WayPointMission : public Mission
 	{
 	public:
 		WayPointMission() = default;
-		WayPointMission(std::shared_ptr<Drone> d, const std::vector<olc::vf2d> w);
+		WayPointMission(Object2d* ptr, const std::vector<olc::vf2d> w);
 		void SetWayPoints(std::vector<olc::vf2d>& m_WayPoints);
 		void AddWayPoint(const olc::vf2d& p);
 		std::vector<olc::vf2d> GetWayPoints() const;
 
 	protected:
-		void OnExecute() override;
+		virtual void OnExecute();
 	private:
 		void UpdateTargetWayPoint();
 		void UpdateTargetWayPointIndex();

@@ -1,8 +1,6 @@
 #include "Escaper.h"
 
 
-
-
 int main()
 {
 	bool flagOut = false;
@@ -14,9 +12,9 @@ int main()
 		std::cin >> choice;
 		if (choice == 'e')
 		{
-			Cevheri::Net::Escaper escaper;
+			Simulation2d::Net::Escaper escaper;
 			escaper.HandleUserEntry();
-			bool isConstructionSuccesful = escaper.Construct(Cevheri::Flight::World_X_Limit, Cevheri::Flight::World_Y_Limit, 1, 1);
+			bool isConstructionSuccesful = escaper.Construct(Simulation2d::Flight::World_X_Limit, Simulation2d::Flight::World_Y_Limit, 1, 1);
 			if (isConstructionSuccesful)
 			{
 				escaper.Start();

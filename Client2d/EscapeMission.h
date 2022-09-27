@@ -1,19 +1,19 @@
 #pragma once
-#include "Common/common2d.h"
+#include "common2d.h"
 
-namespace Cevheri::Flight
+namespace Simulation2d::Flight
 {
-
-
 
 	class EscapeMission : public Mission
 	{
 	public:
 		EscapeMission() = default;
-		EscapeMission(std::shared_ptr<Drone> d);
+		EscapeMission(Object2d* d);
 	protected:
-		void OnExecute() override;
+		virtual void OnExecute();
 	private:
+		int m_ConstantDirectionFrameCounter = 0;
+		olc::vf2d PossibleDirection;
 	};
 }
 

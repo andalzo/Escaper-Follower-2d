@@ -1,11 +1,11 @@
 #include "Follower.h"
 
-namespace Cevheri::Net
+namespace Simulation2d::Net
 {
 	Follower::Follower()
 	{
 		sAppName = "Follower2d";
-		sDroneDesc.type = Flight::Drone::Type::Follower;
+		sObject2dDesc.type = Flight::Object2d::Type::Follower;
 	}
 	bool Follower::OnUserCreate()
 	{

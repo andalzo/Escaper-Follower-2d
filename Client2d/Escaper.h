@@ -1,11 +1,11 @@
 #pragma once
-#include "cevheri_net.h"
+#include "simulation2d_net.h"
 #include "common2d.h"
 #include "WayPointMission.h"
 #include "WaypointCreator.h"
 #include "EscapeMission.h"
 
-namespace Cevheri::Net
+namespace Simulation2d::Net
 {
 	enum UserEntry : uint8_t
 	{
@@ -24,21 +24,20 @@ namespace Cevheri::Net
 		bool OnUserUpdate(float fElapsedTime) override;
 
 	private: // Members
-		std::unordered_map<uint32_t, Flight::Drone> m_mapDrones;
+		std::unordered_map<uint32_t, Flight::Object2d> m_mapObjects;
 		uint32_t m_nDroneId = 0;
-		Flight::Drone m_sDroneDesc;
+		Flight::Object2d m_sObject2dDesc;
 		bool m_bWaitingForConnection = true;
 		bool m_bWaitingForUserEntry = true;
-		Flight::WayPointMission WPM;
-		std::unique_ptr<Flight::Mission> m_ActiveMission;
+		Flight::WayPointMission m_WayPointMission;
+		Flight::EscapeMission m_EscapeMission;
 		olc::TileTransformedView tv;
 		olc::vi2d m_vWorldSize = { Flight::World_X_Limit, Flight::World_Y_Limit };
-		std::vector<olc::vf2d> m_WayPoints;
 
 		void HandleManualUserEntry();
 		void HandleRandomUserEntry();
 		void HandleSimulationEntry();
-		void HandleUserEntryStartSimulation(const Flight::WayPointMission& WPM);
+		void HandleUserEntryStartSimulation();
 	};
 }
 

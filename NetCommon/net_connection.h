@@ -25,7 +25,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 #include "net_message.h"
 
 
-namespace Cevheri
+namespace Simulation2d
 {
 	namespace Net
 	{
@@ -74,7 +74,7 @@ namespace Cevheri
 				return id;
 			}
 
-			void ConnectToClient(Cevheri::Net::server_interface<T>* server, uint32_t uid = 0)
+			void ConnectToClient(Simulation2d::Net::server_interface<T>* server, uint32_t uid = 0)
 			{
 				if (m_nOwnerType == owner::server)
 				{
@@ -156,7 +156,7 @@ namespace Cevheri
 				);
 			}
 
-			void ReadValidation(Cevheri::Net::server_interface<T>* server = nullptr)
+			void ReadValidation(Simulation2d::Net::server_interface<T>* server = nullptr)
 			{
 				asio::async_read(m_socket, asio::buffer(&m_nHandshakeIn, sizeof(uint64_t)),
 					[this, server](std::error_code ec, std::size_t length)

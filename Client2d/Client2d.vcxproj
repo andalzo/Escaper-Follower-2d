@@ -71,7 +71,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(Solution_Dir)\External;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\External\asio\asio\include;$(SolutionDir)\NetCommon</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(SolutionDir)\External\asio\asio\include;$(SolutionDir)\NetCommon</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(SolutionDir)\External\asio\asio\include;$(SolutionDir)\NetCommon</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(SolutionDir)\External\asio\asio\include;$(SolutionDir)\NetCommon</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -79,6 +88,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -93,6 +103,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -107,6 +118,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -121,6 +133,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,20 +143,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="common2d.cpp" />
     <ClCompile Include="EscapeMission.cpp" />
     <ClCompile Include="Escaper.cpp" />
     <ClCompile Include="Follower.cpp" />
     <ClCompile Include="ForceFollowMission.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="olcPGEX_TransformedView.cpp" />
     <ClCompile Include="PounceMission.cpp" />
     <ClCompile Include="WaypointCreator.cpp" />
     <ClCompile Include="WayPointMission.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="common2d.h" />
     <ClInclude Include="EscapeMission.h" />
     <ClInclude Include="Escaper.h" />
     <ClInclude Include="Follower.h" />
     <ClInclude Include="ForceFollowMission.h" />
+    <ClInclude Include="olcPGEX_TransformedView.h" />
+    <ClInclude Include="olcPixelGameEngine.h" />
     <ClInclude Include="PounceMission.h" />
     <ClInclude Include="WaypointCreator.h" />
     <ClInclude Include="WayPointMission.h" />

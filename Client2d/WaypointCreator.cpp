@@ -1,7 +1,7 @@
 #include "WaypointCreator.h"
 
 
-namespace Cevheri::Utility
+namespace Simulation2d::Utility
 {
 	int RandomNumber(const int& nLowerLim,const int& nUpperLim)
 	{

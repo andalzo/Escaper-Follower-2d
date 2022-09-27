@@ -1,15 +1,15 @@
 #pragma once
-#include "Common/common2d.h"
+#include "common2d.h"
 #include <optional>
 
-namespace Cevheri::Flight
+namespace Simulation2d::Flight
 {
 	// TODO: Need to test this mission
 	class ForceFollowMission : public Mission
 	{
 	public:
 		ForceFollowMission() = default;
-		explicit ForceFollowMission(std::shared_ptr<Drone> d);
+		explicit ForceFollowMission(Object2d* d);
 
 		void SetTargetPosition(const olc::vf2d& pos);
 

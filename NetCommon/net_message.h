@@ -23,7 +23,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 #include "net_common.h"
 
 
-namespace Cevheri
+namespace Simulation2d
 {
 	namespace Net
 	{

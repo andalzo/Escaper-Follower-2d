@@ -1,17 +1,11 @@
 #pragma once
-#include "cevheri_net.h"
-#include "Common/common2d.h"
+#include "simulation2d_net.h"
+#include "common2d.h"
+#include "ForceFollowMission.h"
+#include "PounceMission.h"
 
-namespace Cevheri::Net
+namespace Simulation2d::Net
 {
-
-	enum class FollowerState : uint8_t
-	{
-		UserEntry, //in waiting user entry for in being in server
-		RandomEntry, //user choiced random entry for my sim
-		Simulation //In simulation mode
-	};
-
 
 	class Follower : public olc::PixelGameEngine, public client_interface<MsgTypes>
 	{
@@ -20,13 +14,12 @@ namespace Cevheri::Net
 		bool OnUserCreate() override;
 		bool OnUserUpdate(float fElapsedTime) override;
 	private:
-		std::unordered_map<uint32_t, Flight::Drone> mapDrones;
-		uint32_t nDroneId = 0;
-		Flight::Drone sDroneDesc;
+		std::unordered_map<uint32_t, Flight::Object2d> mapObjects;
+		uint32_t nObjectID = 0;
+		Flight::Object2d sObject2dDesc;
 		bool bWaitingForConnection = true;
-
-		FollowerState m_State = FollowerState::UserEntry;
-		std::unique_ptr<Flight::Mission> ActiveMission;
+		Flight::ForceFollowMission m_ForceFollowMission;
+		Flight::PounceMission m_PounceMission;
 	};
 }
 
