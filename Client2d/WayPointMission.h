@@ -14,7 +14,7 @@ namespace Simulation2d::Flight
 		std::vector<olc::vf2d> GetWayPoints() const;
 
 	protected:
-		virtual void OnExecute();
+		void OnExecute() override;
 	private:
 		void UpdateTargetWayPoint();
 		void UpdateTargetWayPointIndex();

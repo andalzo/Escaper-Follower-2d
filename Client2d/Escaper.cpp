@@ -26,7 +26,7 @@ namespace Simulation2d::Net
 	{
 		Clear(olc::BLACK);
 
-		if (!m_sObject2dDesc.bPounced)
+		if (m_sObject2dDesc.bPounced)
 		{
 			// Draw WayPoints
 			for (const auto& wayPoint : m_WayPointMission.GetWayPoints())

@@ -10,7 +10,7 @@ namespace Simulation2d::Flight
 		EscapeMission() = default;
 		EscapeMission(Object2d* d);
 	protected:
-		virtual void OnExecute();
+		void OnExecute() override;
 	private:
 		int m_ConstantDirectionFrameCounter = 0;
 		olc::vf2d PossibleDirection;

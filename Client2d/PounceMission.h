@@ -7,12 +7,24 @@ namespace Simulation2d::Flight
 	{
 	public:
 		PounceMission() = default;
-		explicit PounceMission(std::shared_ptr<Object2d> d);
-		PounceMission(std::shared_ptr<Object2d> main, std::shared_ptr<Object2d> target);
-		void SetTargetDrone(std::shared_ptr<Object2d> target);
+		explicit PounceMission(std::shared_ptr<Object2d> d)
+		{
+
+		}
+		PounceMission(std::shared_ptr<Object2d> main, std::shared_ptr<Object2d> target)
+		{
+
+		}
+		void SetTargetDrone(std::shared_ptr<Object2d> target)
+		{
+
+		}
 
 	protected:
-		void OnExecute() override;
+		void OnExecute() override
+		{
+
+		}
 
 	private:
 		std::shared_ptr<Object2d> m_target;

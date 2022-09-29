@@ -60,7 +60,10 @@ namespace Simulation2d::Flight
 		void Execute();
 		void ExecutePerFrame();
 	protected:
-		virtual void OnExecute() = 0;
+		virtual void OnExecute()
+		{
+
+		}
 		Object2d* m_ptrObject2d = nullptr;
 	private:
 		bool m_bIsAchievable = false;
