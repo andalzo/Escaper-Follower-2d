@@ -43,6 +43,7 @@ namespace Simulation2d::Flight
 
 		olc::vf2d Position;
 		olc::vf2d Velocity;
+		olc::Pixel Color;
 
 		float SpeedPerFrame = 1.0f;
 	};

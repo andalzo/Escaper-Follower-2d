@@ -6,6 +6,7 @@ namespace Simulation2d::Net
 	{
 		sAppName = "Escaper2d";
 		m_sObject2dDesc.type = Flight::Object2d::Type::Escaper;
+		m_sObject2dDesc.Color = olc::VERY_DARK_RED;
 		m_WayPointMission.SetObject2d(&m_sObject2dDesc);
 		m_EscapeMission.SetObject2d(&m_sObject2dDesc);
 

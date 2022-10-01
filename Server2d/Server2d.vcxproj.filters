@@ -3,8 +3,28 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Server2d.cpp" />
+    <ClCompile Include="common2d.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="olcPGEX_TransformedView.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Server2d.h" />
+    <ClInclude Include="common2d.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="olcPGEX_TransformedView.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="olcPixelGameEngine.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Common">
+      <UniqueIdentifier>{5f6eb1ff-6cd7-4618-aca8-8561d120842b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

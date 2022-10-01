@@ -1,20 +1,20 @@
 #pragma once
-#include "cevheri_net.h"
-#include "Common/common2d.h"
+#include "simulation2d_net.h"
+#include "common2d.h"
 
-namespace Cevheri::Net
+namespace Simulation2d::Net
 {
 	class GroundStationServer : public server_interface<MsgTypes>
 	{
 	public:
 		GroundStationServer(uint16_t nPort); // Setting up station with suitable port
-		std::unordered_map<uint32_t, Flight::Drone> m_mapDroneRoster; //Drones data the server
-		std::vector<uint32_t> m_vGarbageIDs; //The vector of ids of drones disconnected, to infrom other drones
+		std::unordered_map<uint32_t, Flight::Object2d> m_mapObjects; 
+		std::vector<uint32_t> m_vectGarbageIDs;
 
 	protected:
-		void OnClientValidated(std::shared_ptr<connection<MsgTypes>> client) override; //Validation override, async
-		bool OnClientConnect(std::shared_ptr<connection<MsgTypes>> client) override; //Connection override, async
-		void OnClientDisconnect(std::shared_ptr<connection<MsgTypes>> client) override; //Disconnection override, async
+		void OnClientValidated(std::shared_ptr<connection<MsgTypes>> client) override;
+		bool OnClientConnect(std::shared_ptr<connection<MsgTypes>> client) override; 
+		void OnClientDisconnect(std::shared_ptr<connection<MsgTypes>> client) override;
 		
 		//message handler function of drone-to-drone and server-to-drone, async
 		void OnMessage(std::shared_ptr<connection<MsgTypes>> client, message<MsgTypes>& msg) override; 
