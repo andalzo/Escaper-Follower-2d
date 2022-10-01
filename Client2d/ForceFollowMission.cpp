@@ -60,6 +60,10 @@ namespace Simulation2d::Flight
 			if (m_ptrObject2d->SpeedPerFrame <= fTargetSpeed)
 			{
 				m_ptrObject2d->SpeedPerFrame = fTargetSpeed + 1.0f;
+				if (m_ptrObject2d->SpeedPerFrame >= m_fMaxSpeedPerFrame)
+				{
+					m_ptrObject2d->SpeedPerFrame = m_fMaxSpeedPerFrame;
+				}
 			}	
 			//..if not, our new velocity should be headed to between our ex position and new
 			m_ptrObject2d->Velocity = m_ptrObject2d->SpeedPerFrame * PossibleDirection;

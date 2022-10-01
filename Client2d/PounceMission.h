@@ -15,10 +15,6 @@ namespace Simulation2d::Flight
 		{
 
 		}
-		void SetTargetDrone(std::shared_ptr<Object2d> target)
-		{
-
-		}
 
 	protected:
 		void OnExecute() override

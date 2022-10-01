@@ -13,32 +13,16 @@ namespace Simulation2d::Flight
 		m_ptrObject2d = d;
 	}
 
-	void Mission::Execute()
-	{
-		if (!m_bIsAchievable)
-		{
-			return;
-		}
-		OnExecute();
-	}
 	
 	Object2d Mission::GetObject2d() const
 	{
 		return *m_ptrObject2d;
 	}
-	void Mission::SetIfAchievable(const bool& b)
+
+	void Mission::Execute()
 	{
-		m_bIsAchievable = b;
-	}
-	
-	void Mission::ExecutePerFrame()
-	{
-		if (!m_bIsAchievable)
-		{
-			return;
-		}	
 		m_ptrObject2d->Velocity = { 0.0f, 0.0f };
-		Execute();
+		OnExecute();
 		m_ptrObject2d->Position += m_ptrObject2d->Velocity;
 	}
 }

@@ -25,6 +25,7 @@ namespace Simulation2d::Flight
 		olc::vf2d m_TargetNewPosition;
 		std::optional<olc::vf2d> m_TargetOldPosition;
 		bool m_bForceFollowSuccess = false;
+		float m_fMaxSpeedPerFrame;
 	};
 
 	

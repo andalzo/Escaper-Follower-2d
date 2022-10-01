@@ -44,7 +44,7 @@ namespace Simulation2d::Flight
 		olc::vf2d Position;
 		olc::vf2d Velocity;
 
-		float SpeedPerFrame;
+		float SpeedPerFrame = 1.0f;
 	};
 
 	class Mission
@@ -55,18 +55,14 @@ namespace Simulation2d::Flight
 		explicit Mission(Object2d* d);
 		void SetObject2d(Object2d* d);
 		Object2d GetObject2d() const;
-		
-		void SetIfAchievable(const bool& b);
 		void Execute();
-		void ExecutePerFrame();
+	
 	protected:
 		virtual void OnExecute()
 		{
 
 		}
 		Object2d* m_ptrObject2d = nullptr;
-	private:
-		bool m_bIsAchievable = false;
 	};
 
 }

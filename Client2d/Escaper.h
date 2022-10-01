@@ -7,7 +7,7 @@
 
 namespace Simulation2d::Net
 {
-	enum UserEntry : uint8_t
+	enum EscaperUserEntry : uint8_t
 	{
 		ManualEntry = 1,
 		RandomEntry = 2,

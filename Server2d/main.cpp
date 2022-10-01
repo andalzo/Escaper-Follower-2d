@@ -1,15 +1,9 @@
 #include <iostream>
-#include "GroundStationServer.h"
+#include "Server2d.h"
 
 
 int main()
 {
-	Cevheri::Net::GroundStationServer GroundStation(60000);
-	GroundStation.Start();
-	while (1)
-	{
-		GroundStation.Update(-1,true);
-	}
 
 }
 

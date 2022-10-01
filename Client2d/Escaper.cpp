@@ -34,7 +34,7 @@ namespace Simulation2d::Net
 				tv.DrawCircle(wayPoint, 8.0);
 			}
 
-			m_WayPointMission.ExecutePerFrame();
+			m_WayPointMission.Execute();
 			//std::cout << "New Position" << m_sObject2dDesc.Position << "\n";
 			tv.DrawCircle(m_sObject2dDesc.Position, m_sObject2dDesc.fRadius, olc::GREEN);
 			
@@ -44,7 +44,7 @@ namespace Simulation2d::Net
 		}
 		else
 		{
-			m_EscapeMission.ExecutePerFrame();
+			m_EscapeMission.Execute();
 			//std::cout << "New Position" << m_sObject2dDesc.Position << "\n";
 			tv.DrawCircle(m_sObject2dDesc.Position, m_sObject2dDesc.fRadius, olc::GREEN);
 
@@ -76,7 +76,7 @@ namespace Simulation2d::Net
 				std::cin.clear();
 				if (std::cin >> cEntry)
 				{
-					switch (static_cast<UserEntry>(static_cast<uint8_t>(cEntry) - 48))
+					switch (static_cast<EscaperUserEntry>(static_cast<uint8_t>(cEntry) - 48))
 					{
 					case ManualEntry:
 					{
