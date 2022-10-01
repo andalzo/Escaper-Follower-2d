@@ -7,9 +7,8 @@ namespace Simulation2d::Net
 		sAppName = "Escaper2d";
 		m_sObject2dDesc.type = Flight::Object2d::Type::Escaper;
 		m_WayPointMission.SetObject2d(&m_sObject2dDesc);
-		
 		m_EscapeMission.SetObject2d(&m_sObject2dDesc);
-		m_EscapeMission.SetIfAchievable(true);
+
 	}
 	bool Escaper::OnUserCreate()
 	{
@@ -128,7 +127,6 @@ namespace Simulation2d::Net
 				std::cin >> point.y;
 				m_WayPointMission.AddWayPoint(point);
 			}
-			m_WayPointMission.SetIfAchievable(true);
 			HandleUserEntryStartSimulation();
 		}
 		else
@@ -150,7 +148,6 @@ namespace Simulation2d::Net
 				std::vector<olc::vf2d> WayPoints;
 				WayPoints = Utility::CreateWayPoints(numberOfWayPointsBelowLimit, numberOfWayPointsUpperLimit);
 				m_WayPointMission.SetWayPoints(WayPoints);
-				m_WayPointMission.SetIfAchievable(true);
 				HandleUserEntryStartSimulation();
 			}	
 		}
@@ -166,7 +163,6 @@ namespace Simulation2d::Net
 		m_WayPointMission.AddWayPoint({ 30.0f,40.0f });
 		m_WayPointMission.AddWayPoint({ 170.0f,40.0f });
 		m_WayPointMission.AddWayPoint({ 170.0f,120.0f });
-		m_WayPointMission.SetIfAchievable(true);
 		HandleUserEntryStartSimulation();
 	}
 	

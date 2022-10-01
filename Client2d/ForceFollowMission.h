@@ -12,6 +12,7 @@ namespace Simulation2d::Flight
 		explicit ForceFollowMission(Object2d* d);
 
 		void SetTargetPosition(const olc::vf2d& pos);
+		void SetMaxSpeed(const float& spd);
 
 		bool IsForceFollowSucces() const;
 		std::optional<olc::vf2d> GetTargetOldPosition() const;

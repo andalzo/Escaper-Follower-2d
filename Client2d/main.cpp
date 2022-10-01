@@ -1,5 +1,5 @@
 #include "Escaper.h"
-
+#include "Follower.h"
 
 int main()
 {
@@ -14,8 +14,8 @@ int main()
 		{
 			Simulation2d::Net::Escaper escaper;
 			escaper.HandleUserEntry();
-			bool isConstructionSuccesful = escaper.Construct(Simulation2d::Flight::World_X_Limit, Simulation2d::Flight::World_Y_Limit, 1, 1);
-			if (isConstructionSuccesful)
+			bool isConstructSuccesful = escaper.Construct(Simulation2d::Flight::World_X_Limit, Simulation2d::Flight::World_Y_Limit, 1, 1);
+			if (isConstructSuccesful)
 			{
 				escaper.Start();
 			}
@@ -26,7 +26,17 @@ int main()
 		}
 		if (choice == 'f')
 		{
-
+			Simulation2d::Net::Follower follower;
+			follower.HandleUserEntry();
+			bool isConstructSuccesful = follower.Construct(Simulation2d::Flight::World_X_Limit, Simulation2d::Flight::World_Y_Limit, 1, 1);
+			if (isConstructSuccesful)
+			{
+				follower.Start();
+			}
+			if (!follower.olc_IsRunning())
+			{
+				flagOut = true;
+			}
 		}
 		else
 		{

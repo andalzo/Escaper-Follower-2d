@@ -19,6 +19,10 @@ namespace Simulation2d::Flight
 			m_TargetOldPosition = temp;
 		}
 	}
+	void ForceFollowMission::SetMaxSpeed(const float& spd)
+	{
+		m_fMaxSpeedPerFrame = spd;
+	}
 	bool ForceFollowMission::IsForceFollowSucces() const
 	{
 		return m_bForceFollowSuccess;

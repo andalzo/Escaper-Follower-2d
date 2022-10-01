@@ -3,6 +3,8 @@
 #include "common2d.h"
 #include "ForceFollowMission.h"
 #include "PounceMission.h"
+#include "WayPointMission.h"
+#include <set>
 
 namespace Simulation2d::Net
 {
@@ -20,20 +22,34 @@ namespace Simulation2d::Net
 		Follower();
 		bool OnUserCreate() override;
 		bool OnUserUpdate(float fElapsedTime) override;
+		void HandleUserEntry();
 	private:
+		
 		std::unordered_map<uint32_t, Flight::Object2d> m_mapObjects;
 		uint32_t m_nObjectID = 0;
 		Flight::Object2d m_sObject2dDesc;
-		std::vector<olc::vf2d> m_vectTargetPositions;
+		
+		
+		std::set<olc::vf2d> m_setTargetPositions;
+		Flight::Object2d m_sObject2dEscaperDesc;
+		Flight::WayPointMission m_WayPointMission;
+
+		bool m_bIsTest = false;
 		bool m_bWaitingForConnection = true;
-		bool m_bWaitingForUserInput = true;
+		bool m_bWaitingForUserEntry = true;
+		
 		Flight::ForceFollowMission m_ForceFollowMission;
 		Flight::PounceMission m_PounceMission;
+
+		olc::TileTransformedView tv;
+		olc::vi2d m_vWorldSize = { Flight::World_X_Limit, Flight::World_Y_Limit };
 		
-		void HandleUserEntry();
+
 		void HandleTestForceFollowMission();
 		void HandleTestPounceMission();
 		void HandleNormalStart();
+
+		void DrawWorldObjects(const bool&);
 	};
 }
 
