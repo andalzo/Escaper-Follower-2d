@@ -5,17 +5,16 @@ namespace Simulation2d::Net
 	Follower::Follower()
 	{
 		sAppName = "Follower2d";
+		
 		m_sObject2dDesc.type = Flight::Object2d::Type::Follower;
 		m_sObject2dDesc.Color = olc::GREEN;
-		m_sObject2dDesc.Position = { 250.0f, 250.0f };
-		m_ForceFollowMission.SetObject2d(&m_sObject2dDesc);
-		m_PounceMission.SetObject2d(&m_sObject2dDesc);
 	}
+	
 	bool Follower::OnUserCreate()
 	{
 		tv = olc::TileTransformedView({ ScreenWidth(), ScreenHeight() }, { 1, 1 });
 
-		if (Connect("192.168.1.50", 60000))
+		if (Connect("192.168.1.51", 60000))
 		{
 			return true;
 		}
@@ -31,10 +30,41 @@ namespace Simulation2d::Net
 			bIsDrawTargetRoute = !bIsDrawTargetRoute;
 		}
 		
-		if (!m_bIsTest)
+		if (m_bIsTest)
+		{
+			if (m_bIsTestForceFollow)
+			{
+
+				m_WayPointMission.Execute();
+				m_setTargetPositions.insert(m_mapObjects.at(m_nTargetObjectID).Position);
+				m_ForceFollowMission.SetTargetPosition(m_mapObjects.at(m_nTargetObjectID).Position);
+				m_ForceFollowMission.Execute();
+			}
+			else
+			{
+				m_EscapeMission.Execute();
+				m_setTargetPositions.insert(m_mapObjects.at(m_nTargetObjectID).Position);
+				m_ForceFollowMission.SetTargetPosition(m_mapObjects.at(m_nTargetObjectID).Position);
+				m_ForceFollowMission.Execute();
+
+			}
+
+			DrawWorldObjects(bIsDrawTargetRoute);
+
+			return true; //We finished creating this frame succesfully in normal client-server mode
+		}
+		else
 		{
 			//Handle Incoming Messages
 			HandleIncomingMessages();
+
+			if (m_bWaitingForConnection)
+			{
+				Clear(olc::DARK_BLUE);
+				DrawString({ 10,10 }, "Waiting To Connect...", olc::WHITE);
+				return true;
+			}
+
 			//State Machine
 			switch (m_ActiveMission)
 			{
@@ -47,44 +77,214 @@ namespace Simulation2d::Net
 			case FollowerMissions::PounceMission:
 				OnPounceMission();
 				break;
+			default:
+				std::cerr << "\n[ERROR]:Impossible active mission state for follower.\n";
+				std::exit(-1);
+				break;
 			}
 
 			//Drawing the objects
 			DrawWorldObjects(bIsDrawTargetRoute);
-			
+
 			//Final update message to the server
+			message<SimMsg> msg;
+			msg.header.id = SimMsg::Simulation_UpdateObject;
+			msg << m_mapObjects.at(m_nObjectId);
+			Send(msg);
+
+			return true; //We finished creating this frame succesfully in test mode
+		}
+		
+	}
+
+	void Follower::HandleIncomingMessages()
+	{
+		if (IsConnected())
+		{
+			while (!InComing().empty())
+			{
+				message<SimMsg> msg = InComing().pop_front().msg;
+				switch (msg.header.id)
+				{
+					case SimMsg::Client_Accepted:
+					{
+						std::cout << "Server accepted client - you're in!\n";
+						message<SimMsg> msg;
+						msg.header.id = SimMsg::Client_RegisterWithServer;
+						msg << m_sObject2dDesc;
+						Send(msg);
+						break;
+					}
+					case SimMsg::Client_AssignID:
+					{
+						msg >> m_nObjectId;
+						std::cout << "Assigned Client ID: " << m_nObjectId << "\n";
+						break;
+					}
+
+					case SimMsg::Simulation_AddObject:
+					{
+						Flight::Object2d sNewObject;
+						msg >> sNewObject;
+						if (sNewObject.nUniqueID == m_nObjectId)
+						{
+							//Now we exist in the game world
+							m_bWaitingForConnection = false;
+							m_sObject2dDesc = sNewObject;
+							AssignObjectID(m_sObject2dDesc.nUniqueID);
+							break;
+						}
+						
+						m_mapObjects.insert_or_assign(sNewObject.nUniqueID, sNewObject);
+						break;
+					}
+					case SimMsg::Simulation_RemoveObject:
+					{
+						uint32_t nRemovalId = 0;
+						msg >> nRemovalId;
+						m_mapObjects.erase(nRemovalId);
+						break;
+					}
+					case SimMsg::Simulation_UpdateObject:
+					{
+						Flight::Object2d sUpdatedObject;
+						msg >> sUpdatedObject;
+						m_mapObjects.insert_or_assign(sUpdatedObject.nUniqueID, sUpdatedObject);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	void Follower::AssignObjectID(const uint32_t& id)
+	{
+		m_nObjectId = id;
+		m_mapObjects.insert_or_assign(m_nObjectId, m_sObject2dDesc);
+		m_ForceFollowMission.SetObject2d(&m_mapObjects.at(m_nObjectId));
+	}
+
+	void Follower::OnObserveMission()
+	{
+		m_strMode = "Observing...";
+
+		if (m_mapObjects.empty())
+		{
+			m_ActiveMission = FollowerMissions::ObserveMission;
+			return;
+		}
+
+		float fDistanceToNearest = 0.0f;
+		std::optional<uint32_t> nPossibleTargetID;
+		for (const auto& object : m_mapObjects)
+		{
+			if (object.second.type != Flight::Object2d::Type::Follower)
+			{
+				float fPossibleDistancetoNearest = (object.second.Position - m_mapObjects.at(m_nObjectId).Position).mag2();
+				if (fDistanceToNearest >= fPossibleDistancetoNearest)
+				{
+					fDistanceToNearest = fPossibleDistancetoNearest;
+					nPossibleTargetID = object.second.nUniqueID;
+				}
+			}
+		}
+
+		if (nPossibleTargetID.has_value())
+		{
+			m_ActiveMission = FollowerMissions::ForceFollowMission;
+			m_nTargetObjectID = nPossibleTargetID.value();
+			return;
 		}
 		else
 		{
-			if (!m_sObject2dDesc.bPounced)
-			{
-			
-				m_WayPointMission.Execute();
-				m_setTargetPositions.insert(m_sTargetObject2dDesc.Position);
-				m_ForceFollowMission.SetTargetPosition(m_sTargetObject2dDesc.Position);
-				m_ForceFollowMission.Execute();
-				
-				DrawWorldObjects(bIsDrawTargetRoute);
-			}
-			else
-			{
-
-			}
+			m_ActiveMission = FollowerMissions::ObserveMission;
+			return;
 		}
 		
-
-		return true;
 	}
+
+	void Follower::OnForceFollowMission()
+	{
+		m_strMode = "Force Following...";
+
+		m_ForceFollowMission.SetTargetPosition(m_mapObjects.at(m_nTargetObjectID).Position);
+		
+		m_ForceFollowMission.Execute();
+		if (m_ForceFollowMission.IsForceFollowSucces())
+		{
+			m_ActiveMission = FollowerMissions::PounceMission;
+			m_mapObjects.at(m_nTargetObjectID).bPounced = true;
+			//TODO: Send pounce start information to server
+			m_tpPounceStart = std::chrono::system_clock::now();
+		}
+		else
+		{
+			m_ActiveMission = FollowerMissions::ForceFollowMission;
+		}
+	}
+
+	void Follower::OnPounceMission()
+	{
+		m_strMode = "Trying To Pounce..";
+
+		std::chrono::time_point<std::chrono::system_clock> tpPossiblePounceEnd = std::chrono::system_clock::now();
+		int64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(tpPossiblePounceEnd - m_tpPounceStart).count();
+		if (duration >= 240)
+		{
+			m_mapObjects.at(m_nTargetObjectID).bPounceSucces = true;
+			//TODO: Send pounce finish information to server
+			m_ActiveMission = FollowerMissions::ObserveMission;
+			return;
+		}
+		else
+		{
+			m_ForceFollowMission.SetTargetPosition(m_mapObjects.at(m_nTargetObjectID).Position);
+			m_ForceFollowMission.Execute();
+		}
+	}
+
+	void Follower::DrawWorldObjects(const bool& bIsDrawTargetRoute)
+	{
+
+		Clear(olc::DARK_BLUE);
+
+		DrawString({ 10,10 }, m_strMode, olc::WHITE);
+
+		if (bIsDrawTargetRoute)
+		{
+			for (const auto& Point : m_setTargetPositions)
+			{
+				tv.DrawCircle(Point, 0.5f);
+			}
+		}
+
+		for (const auto& object : m_mapObjects)
+		{
+			
+			tv.DrawCircle(object.second.Position, object.second.fRadius, object.second.Color);
+
+			if (object.second.Velocity.mag2() > 0)
+			{
+				tv.DrawLine(object.second.Position,
+					object.second.Position + object.second.Velocity.norm() * object.second.fRadius,
+					olc::MAGENTA);
+			}
+		
+		}
+
+		
+	}
+
 
 	void Follower::HandleUserEntry()
 	{
-		while(m_bWaitingForUserEntry)
+		while (m_bWaitingForUserEntry)
 		{
 
 			olc::vf2d vf2dStartPosition;
-			
+
 			std::cout << "Enter starting x position of object:\n";
-			
+
 			std::cin.clear();
 			if (std::cin >> vf2dStartPosition.x)
 			{
@@ -96,31 +296,26 @@ namespace Simulation2d::Net
 
 					std::cout << "Enter max speed for your object: \n";
 					float fMaxSpeed;
-					
+
 					std::cin.clear();
 					if (std::cin >> fMaxSpeed)
 					{
 						m_ForceFollowMission.SetMaxSpeed(fMaxSpeed);
-						
-						std::cout << "\n***FOLLOWER USER INPUT MENU***\n";
-						std::cout << "Choice one of the following\n";
-						std::cout << "1. Test ForceFollowMission\n";
-						std::cout << "2. Test Pounce Mission\n";
-						std::cout << "3. Normal Start\n";
-						int input;
+
+						std::cout << "Choice one of the following:\n";
+						std::cout << "Test ForceFollowMission[t]\n";
+						std::cout << "Normal Start[n]\n";
+						char answer;
 						std::cin.clear();
-						if (std::cin >> input)
+						if (std::cin >> answer)
 						{
-							switch (static_cast<FollowerUserEntry>(input))
+							switch (answer)
 							{
-							case FollowerUserEntry::TestForceFollowMission:
+							case 't':
 								HandleTestForceFollowMission();
 								break;
-							case FollowerUserEntry::TestPounceMission:
-								HandleTestPounceMission();
-								break;
-							case FollowerUserEntry::NormalStart:
-								HandleNormalStart();
+							case 'n':
+								StartSimulation();
 								break;
 							default:
 								std::cout << "[WARNING]: You entered inappropriate value. Try again from start.\n";
@@ -140,17 +335,18 @@ namespace Simulation2d::Net
 				else
 				{
 					std::cout << "[WARNING]: You entered inappropriate value. Try again from start.\n";
-				}				
+				}
 			}
 			else
 			{
 				std::cout << "[WARNING]: You entered inappropriate value. Try again from start.\n";
 			}
-			
+
 		}
 	}
-	void Follower::HandleTestForceFollowMission()
-	{	
+
+	void Follower::HandleTestWithWayPointMission()
+	{
 		std::vector<olc::vf2d> WayPoints;
 
 		std::cout << "Enter below limit of number of waypoints you want to produce :\n";
@@ -169,40 +365,75 @@ namespace Simulation2d::Net
 		{
 			std::cout << "[WARNING]: You entered inappropriate value. Try again from start.\n";
 		}
-		
 
-		m_sTargetObject2dDesc.Color = olc::RED;
-		m_WayPointMission.SetObject2d(&m_sTargetObject2dDesc);
+		//We should create fake escaper object
+		Flight::Object2d sTarget;
+		sTarget.Color = olc::RED;
+		
+		//.. and insert this into our object map with specific id
+		m_nTargetObjectID = 0;
+		m_mapObjects.insert_or_assign(m_nTargetObjectID, sTarget);
+
+		// .. and we need to feed waypoint mission with that object2d
+		m_WayPointMission.SetObject2d(&m_mapObjects.at(m_nTargetObjectID));
 		m_WayPointMission.SetWayPoints(WayPoints);
 
-		m_bIsTest = true;
+		//We should add our follower object with specific id
+		AssignObjectID(1);
+		
+		//We need to test in waypoint mode, this is boilerplot but eases the readability
+		m_bIsTestForceFollow = true;
 
-		HandleNormalStart();
+		StartSimulation();
+	}
 
-	}
-	void Follower::HandleTestPounceMission()
+	// BUG: There is a bug with this test, don not draw follower object [Importance: Mid]
+	void Follower::HandleTestWithEscapeMission()
 	{
-		m_bIsTest = true;
-		HandleNormalStart();
+
+		//We should create fake escaper object
+		Flight::Object2d sTarget;
+		sTarget.Color = olc::RED;
+
+		//.. and insert this into our object map with specific id
+		m_nTargetObjectID = 0;
+		m_mapObjects.insert_or_assign(m_nTargetObjectID, sTarget);
+
+		// .. and we need to feed escaper mission with that object2d
+		m_EscapeMission.SetObject2d(&m_mapObjects.at(m_nTargetObjectID));
+
+		//We should add our follower object with specific id
+		AssignObjectID(1);
+
+		//We need to test in escape mode, so we need to set this bool true
+		m_bIsTestForceFollow = false;
+
+		StartSimulation();
 	}
-	void Follower::HandleNormalStart()
+
+
+	void Follower::HandleTestForceFollowMission()
 	{
-		std::cout << "The simulation will start. Do you agree?[y/n]\n";
+		std::cout << "Which mission do you want the escaper to be in ?\n";
+		std::cout << "WayPoint[w]\nEscape[e]\n";
 		char answer;
 		std::cin.clear();
 		if (std::cin >> answer)
 		{
 			switch (answer)
 			{
-				case 'y':
-					m_bWaitingForUserEntry = false;
-					break;
-				case 'n':
-					m_bWaitingForUserEntry = true;
-					break;			
-				default:
-					std::cout << "[WARNING]: You entered inappropriate value. Try again from start.\n";
-			}		
+			case 'w':
+				HandleTestWithWayPointMission();
+				m_bIsTest = true;
+				break;
+			case 'e':
+				HandleTestWithEscapeMission();
+				m_bIsTest = true;
+				break;
+			default:
+				std::cout << "[WARNING]: You entered inappropriate value. Try again from start.\n";
+				break;
+			}
 		}
 		else
 		{
@@ -211,63 +442,30 @@ namespace Simulation2d::Net
 
 	}
 
-	void Follower::HandleIncomingMessages()
+	void Follower::StartSimulation()
 	{
-	}
-
-	void Follower::OnObserveMission()
-	{
-	}
-
-	void Follower::OnForceFollowMission()
-	{
-	}
-
-	void Follower::OnPounceMission()
-	{
-	}
-
-	// TODO: Need to draw every object,the code needs a touch
-	void Follower::DrawWorldObjects(const bool& bIsDrawTargetRoute)
-	{
-
-		Clear(olc::DARK_BLUE);
-
-		if (bIsDrawTargetRoute)
+		std::cout << "The simulation will start. Do you agree?[y/n]\n";
+		char answer;
+		std::cin.clear();
+		if (std::cin >> answer)
 		{
-			for (const auto& Point : m_setTargetPositions)
+			switch (answer)
 			{
-				tv.DrawCircle(Point, 0.5f);
+			case 'y':
+				m_bWaitingForUserEntry = false;
+				break;
+			case 'n':
+				m_bWaitingForUserEntry = true;
+				break;
+			default:
+				std::cout << "[WARNING]: You entered inappropriate value. Try again from start.\n";
 			}
-		}
-
-		if (!m_bIsTest)
-		{
-			for (const auto& object : m_mapObjects)
-			{
-				tv.DrawCircle(object.second.Position, object.second.fRadius, object.second.Color);
-
-				if (object.second.Velocity.mag2() > 0)
-					tv.DrawLine(object.second.Position,
-						object.second.Position + object.second.Velocity.norm() * object.second.fRadius,
-						olc::MAGENTA);
-			}
-
 		}
 		else
 		{
-			tv.DrawCircle(m_sObject2dDesc.Position, m_sObject2dDesc.fRadius, m_sObject2dDesc.Color);
-			tv.DrawCircle(m_sTargetObject2dDesc.Position, m_sTargetObject2dDesc.fRadius, m_sTargetObject2dDesc.Color);
-
-			if (m_sObject2dDesc.Velocity.mag2() > 0)
-				tv.DrawLine(m_sObject2dDesc.Position,
-					m_sObject2dDesc.Position + m_sObject2dDesc.Velocity.norm() * m_sObject2dDesc.fRadius,
-					olc::MAGENTA);
-
-			if (m_sTargetObject2dDesc.Velocity.mag2() > 0)
-				tv.DrawLine(m_sTargetObject2dDesc.Position,
-					m_sTargetObject2dDesc.Position + m_sTargetObject2dDesc.Velocity.norm() * m_sTargetObject2dDesc.fRadius,
-					olc::MAGENTA);
+			std::cout << "[WARNING]: You entered inappropriate value. Try again from start.\n";
 		}
+
 	}
 }
+

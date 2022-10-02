@@ -4,7 +4,6 @@
 
 namespace Simulation2d::Flight
 {
-	// TODO: Need to test this mission
 	class ForceFollowMission : public Mission
 	{
 	public:

@@ -4,15 +4,20 @@
 
 namespace Simulation2d::Net
 {
-	enum class MsgTypes : uint32_t
+	enum class SimMsg: uint32_t
 	{
 		Server_GetStatus,
 		Server_GetPing,
 
 		Client_Accepted,
+		Client_Rejected,
 		Client_AssignID,
 		Client_RegisterWithServer,
-		Client_UnregisterWithServer,
+		
+		Client_PounceStart,
+		Client_PounceSuccesful,
+		Client_PounceCancel,
+
 
 		Simulation_AddObject,
 		Simulation_RemoveObject,
@@ -39,7 +44,8 @@ namespace Simulation2d::Flight
 		Type type;
 
 		float fRadius = 8.0f; //Radius of Drone (In 2d we represent drone as circle
-		bool bPounced = false; //If drone is in the state of pouncing or escaping mission ?
+		bool bPounced = false; //If drone is in the state of pouncing or escaping mission?
+		bool bPounceSucces = false; //If pounce is succeed by follower, this is valid just for escaper
 
 		olc::vf2d Position;
 		olc::vf2d Velocity;

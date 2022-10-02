@@ -6,7 +6,7 @@ int main()
 	bool flagOut = false;
 	while (!flagOut)
 	{
-		std::cout << "Which one will be your role ? [e for Escaper|f for Follower\n";
+		std::cout << "Which one will be your role ?\nEscaper[e]\nFollower[f]\n";
 		std::cin.clear();
 		char choice;
 		std::cin >> choice;
@@ -40,7 +40,7 @@ int main()
 		}
 		else
 		{
-			std::cout << "[WARNÝNG]: Inappropriate Input. Try again.\n";
+			std::cout << "[WARNING]: Inappropriate Input. Try again.\n";
 		}
 	}
 

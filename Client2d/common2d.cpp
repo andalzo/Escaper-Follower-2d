@@ -21,6 +21,10 @@ namespace Simulation2d::Flight
 
 	void Mission::Execute()
 	{
+		if (!m_ptrObject2d)
+		{
+			return;
+		}
 		m_ptrObject2d->Velocity = { 0.0f, 0.0f };
 		OnExecute();
 		m_ptrObject2d->Position += m_ptrObject2d->Velocity;

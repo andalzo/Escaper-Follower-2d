@@ -9,8 +9,10 @@ namespace Simulation2d::Flight
 
 	void EscapeMission::OnExecute()
 	{
+		m_bIsConstantDirection = true;
 		if (m_ConstantDirectionFrameCounter == 50)
 		{
+			m_bIsConstantDirection = false;
 			PossibleDirection.x = Utility::RandomNumber(-1, 1);
 			PossibleDirection.y = Utility::RandomNumber(-1, 1);
 			m_ptrObject2d->SpeedPerFrame = Utility::RandomNumber(1, 2);
@@ -65,6 +67,11 @@ namespace Simulation2d::Flight
 		}
 
 		m_ptrObject2d->Velocity = PossibleVelocity;
+	}
+
+	bool EscapeMission::IsConstantDirection() const
+	{
+		return m_bIsConstantDirection;
 	}
 
 

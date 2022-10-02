@@ -6,54 +6,78 @@ namespace Simulation2d::Net
 	{
 		sAppName = "Escaper2d";
 		m_sObject2dDesc.type = Flight::Object2d::Type::Escaper;
-		m_sObject2dDesc.Color = olc::VERY_DARK_RED;
-		m_WayPointMission.SetObject2d(&m_sObject2dDesc);
-		m_EscapeMission.SetObject2d(&m_sObject2dDesc);
-
+		m_sObject2dDesc.Color = olc::RED;
 	}
 	bool Escaper::OnUserCreate()
 	{
 		tv = olc::TileTransformedView({ ScreenWidth(), ScreenHeight() }, { 1, 1 });
 
-		if (Connect("192.168.1.50", 60000))
+		if (Connect("192.168.1.51", 60000))
 		{
 			return true;
 		}
-		return true; //TODO
+		return false; //TODO
 	}
 	
 	bool Escaper::OnUserUpdate(float fElapsedTime)
 	{
-		Clear(olc::BLACK);
-
-		if (m_sObject2dDesc.bPounced)
+		if (m_bIsTest)
 		{
-			// Draw WayPoints
-			for (const auto& wayPoint : m_WayPointMission.GetWayPoints())
+			if (m_bIsTestWayPoint)
 			{
-				tv.DrawCircle(wayPoint, 8.0);
-			}
+				m_WayPointMission.Execute();
 
-			m_WayPointMission.Execute();
-			//std::cout << "New Position" << m_sObject2dDesc.Position << "\n";
-			tv.DrawCircle(m_sObject2dDesc.Position, m_sObject2dDesc.fRadius, olc::GREEN);
-			
-			if (m_sObject2dDesc.Velocity.mag2() > 0)
-				tv.DrawLine(m_sObject2dDesc.Position, m_sObject2dDesc.Position + m_sObject2dDesc.Velocity.norm() * 
-				m_sObject2dDesc.fRadius, olc::MAGENTA);
+			}
+			else
+			{
+				m_EscapeMission.Execute();
+			}
+			DrawWorldObjects();
+
+			return true;
 		}
 		else
 		{
-			m_EscapeMission.Execute();
-			//std::cout << "New Position" << m_sObject2dDesc.Position << "\n";
-			tv.DrawCircle(m_sObject2dDesc.Position, m_sObject2dDesc.fRadius, olc::GREEN);
 
-			if (m_sObject2dDesc.Velocity.mag2() > 0)
-				tv.DrawLine(m_sObject2dDesc.Position, m_sObject2dDesc.Position + m_sObject2dDesc.Velocity.norm() *
-					m_sObject2dDesc.fRadius, olc::MAGENTA);
+			//Handle Incoming Messages
+			HandleIncomingMessages();
+
+
+			if (m_bWaitingForConnection)
+			{
+				Clear(olc::DARK_BLUE);
+				DrawString({ 10,10 }, "Waiting To Connect...", olc::WHITE);
+				return true;
+			}
+
+			switch (m_ActiveMission)
+			{
+			case WayPointMission:
+				OnWayPointMission();
+				break;
+			case EscapeMission:
+				OnEscapeMission();
+				break;
+			case DestroyMission:
+				OnDestroyMission();
+				break;
+			default:
+				std::cerr << "\n[ERROR]:Impossible active mission state for escaper.\n";
+				std::exit(-1);
+				break;
+			}
+
+			DrawWorldObjects();
+
+			//Final update message to the server
+			message<SimMsg> msg;
+			msg.header.id = SimMsg::Simulation_UpdateObject;
+			msg << m_mapObjects.at(m_nObjectId);
+			Send(msg);
+
+			return true;
 		}
 		
-		return true;
 	}
 	
 	void Escaper::HandleUserEntry()
@@ -67,37 +91,32 @@ namespace Simulation2d::Net
 			if (std::cin >> fSpeed)
 			{
 				m_sObject2dDesc.SpeedPerFrame = fSpeed;
-				std::cout << "\n***WAYPOINT ENTRY MENU***\n\n";
-				std::cout << "Please select number to continue:\n";
-				std::cout << "1. Manual Entry (Give waypoints manually)\n";
-				std::cout << "2. Random Entry (Choices waypoints randomly)\n";
-				std::cout << "3. Test Simulation (Choices waypoints predefined)\n";
-				char cEntry;
+				std::cout << "What do you want to do?\n";
+				std::cout << "Test WayPointMission[w]\n";
+				std::cout << "Test EscapeMission[e]\n";
+				std::cout << "Normal Start[n](need network)\n";
+				char answer;
 				std::cin.clear();
-				if (std::cin >> cEntry)
+				int limBelow, limUpper;
+				if (std::cin >> answer)
 				{
-					switch (static_cast<EscaperUserEntry>(static_cast<uint8_t>(cEntry) - 48))
+					switch (answer)
 					{
-					case ManualEntry:
-					{
-						HandleManualUserEntry();
+					case 'w':
+						HandleUserEntryWayPoint();
 						break;
-					}
-					case RandomEntry:
-					{
-						HandleRandomUserEntry();
+					case 'e':
+						HandleUserEntryEscape();
 						break;
-					}
-					case TestSimulation:
-					{
-						HandleSimulationEntry();
+					case 'n':
+						limBelow = Utility::RandomNumber(5, 12);
+						limUpper = Utility::RandomNumber(12, 30);
+						HandleRandomWayPoint(limBelow, limUpper);
+						StartSimulation();
 						break;
-					}
 					default:
-					{
 						std::cout << "[WARNING]: You entered inappropriate value\n";
 						break;
-					}
 					}
 				}
 				else
@@ -108,11 +127,116 @@ namespace Simulation2d::Net
 			else
 			{
 				std::cout << "[WARNING]: You entered inappropriate value\n";
-			}	
+			}
 		}
 
 	}
-	void Escaper::HandleManualUserEntry()
+
+	void Escaper::HandleIncomingMessages()
+	{
+
+	}
+	void Escaper::AssignObjectID(const uint32_t& id)
+	{
+		m_nObjectId = id;
+		m_mapObjects.insert_or_assign(m_nObjectId, m_sObject2dDesc);
+		m_WayPointMission.SetObject2d(&m_mapObjects.at(m_nObjectId));
+		m_EscapeMission.SetObject2d(&m_mapObjects.at(m_nObjectId));
+	}
+	void Escaper::OnWayPointMission()
+	{
+		if (m_mapObjects.at(m_nObjectId).bPounced)
+		{
+			m_ActiveMission = EscaperMissions::EscapeMission;
+			return;
+		}
+
+		m_WayPointMission.Execute();
+	}
+	void Escaper::OnEscapeMission()
+	{
+		if (m_mapObjects.at(m_nObjectId).bPounceSucces)
+		{
+			m_ActiveMission = EscaperMissions::DestroyMission;
+			return;
+		}
+
+		m_WayPointMission.Execute();
+	}
+	void Escaper::OnDestroyMission()
+	{
+		Disconnect(); //Disconnect from server
+		olc_Terminate(); // Close the application
+	}
+	void Escaper::DrawWorldObjects()
+	{
+		Clear(olc::DARK_BLUE);
+		
+		if (!m_mapObjects.at(m_nObjectId).bPounced)
+		{
+			// Draw WayPoints
+			for (const auto& wayPoint : m_WayPointMission.GetWayPoints())
+			{
+				tv.DrawCircle(wayPoint, 8.0);
+			}
+		}
+
+		for (const auto& object : m_mapObjects)
+		{
+
+			tv.DrawCircle(object.second.Position, object.second.fRadius, object.second.Color);
+
+			if (object.second.Velocity.mag2() > 0)
+			{
+				tv.DrawLine(object.second.Position,
+					object.second.Position + object.second.Velocity.norm() * object.second.fRadius,
+					olc::MAGENTA);
+			}
+
+		}
+	}
+	
+	void Escaper::HandleUserEntryWayPoint()
+	{
+		m_bIsTestWayPoint = true;
+		std::cout << "Please select entry mode:\n";
+		std::cout << "Manual Entry (Give waypoints manually)[m]\n";
+		std::cout << "Random Entry (Choices waypoints randomly)[r]\n";
+		std::cout << "Test Simulation (Choices waypoints predefined)[t]\n";
+		char cEntry;
+		std::cin.clear();
+		if (std::cin >> cEntry)
+		{
+			switch (cEntry)
+			{
+			case 'm':
+			{
+				HandleManualUserEntryWayPoint();
+				break;
+			}
+			case 'r':
+			{
+				HandleRandomUserEntryWayPoint();
+				break;
+			}
+			case 't':
+			{
+				HandleSimulationEntryWayPoint();
+				break;
+			}
+			default:
+			{
+				std::cout << "[WARNING]: You entered inappropriate value\n";
+				break;
+			}
+			}
+		}
+		else
+		{
+			std::cout << "[WARNING]: You entered inappropriate value\n";
+		}
+	}
+	void Escaper::HandleManualUserEntryWayPoint()
 	{
 		std::cout << "Enter the number of waypoints you want:\n";
 		int numberOfWayPoints = 0;
@@ -128,29 +252,34 @@ namespace Simulation2d::Net
 				std::cin >> point.y;
 				m_WayPointMission.AddWayPoint(point);
 			}
-			HandleUserEntryStartSimulation();
+			AssignObjectID(0);
+			StartSimulation();
 		}
 		else
 		{
 			std::cout << "[WARNING]: You entered inappropriate value. Try again from start.\n";
 		}
 	}
-	void Escaper::HandleRandomUserEntry()
+	void Escaper::HandleRandomUserEntryWayPoint()
 	{
 		std::cout << "Enter below limit of number of waypoints you want to produce :\n";
-		int numberOfWayPointsBelowLimit = 0;
-		if (std::cin >> numberOfWayPointsBelowLimit)
+		int limBelow = 0;
+		std::cin.clear();
+		if (std::cin >> limBelow)
 		{
 			std::cout << "Enter upper limit of number of waypoints you want to produce :\n";
-			int numberOfWayPointsUpperLimit = 0;
-
-			if (std::cin >> numberOfWayPointsUpperLimit)
+			int limUpper = 0;
+			std::cin.clear();
+			if (std::cin >> limUpper)
 			{
-				std::vector<olc::vf2d> WayPoints;
-				WayPoints = Utility::CreateWayPoints(numberOfWayPointsBelowLimit, numberOfWayPointsUpperLimit);
-				m_WayPointMission.SetWayPoints(WayPoints);
-				HandleUserEntryStartSimulation();
-			}	
+				HandleRandomWayPoint(limBelow, limUpper);
+				AssignObjectID(0);
+				StartSimulation();
+			}
+			else
+			{
+				std::cout << "[WARNING]: You entered inappropriate value. Try again from start.\n";
+			}
 		}
 		else
 		{
@@ -158,36 +287,48 @@ namespace Simulation2d::Net
 		}
 	}
 	
-	void Escaper::HandleSimulationEntry()
+	void Escaper::HandleSimulationEntryWayPoint()
 	{
 		//WPM Simulation Ýnitializition Here
 		m_WayPointMission.AddWayPoint({ 30.0f,40.0f });
 		m_WayPointMission.AddWayPoint({ 170.0f,40.0f });
 		m_WayPointMission.AddWayPoint({ 170.0f,120.0f });
-		HandleUserEntryStartSimulation();
+		AssignObjectID(0);
+		StartSimulation();
 	}
 	
-	void Escaper::HandleUserEntryStartSimulation()
+	void Escaper::HandleUserEntryEscape()
 	{
-		std::cout << "The way point mission created and assigned. The simulation will start.\n";
-		std::cout << "Do you agree?[y/n]\n";
-		char input;
-		if (std::cin >> input)
-		{
-			if (input == 'y')
-			{
-				m_bWaitingForUserEntry = false;
-				//TODO: This is ugly to handle missions inside Escaper, maybe better organization of mission classes 
-				//with singletons and enum approach work better
+		m_bIsTestWayPoint = false;
+		AssignObjectID(0);
+		StartSimulation();
+	}
 
-			}
-			else if (input == 'n')
+	void Escaper::HandleRandomWayPoint(const int& limBelow, const int& limUpper)
+	{
+		std::vector<olc::vf2d> WayPoints;
+		WayPoints = Utility::CreateWayPoints(limBelow, limUpper);
+		m_WayPointMission.SetWayPoints(WayPoints);
+	}
+
+	void Escaper::StartSimulation()
+	{
+		std::cout << "The simulation for escaper will start.Do you agree?[y/n]\n";
+		char answer;
+		std::cin.clear();
+		if (std::cin >> answer)
+		{
+			switch (answer)
 			{
+			case 'y':
+				m_bWaitingForUserEntry = false;
+				break;
+			case 'n':
 				m_bWaitingForUserEntry = true;
-			}
-			else
-			{
-				std::cout << "[WARNING]:You entered inappropriate value. Try again from start.\n";
+				break;
+			default:
+				std::cout << "[WARNING]:You entered inappropriate value.Try again from start.\n";
+				break;
 			}
 		}
 		else

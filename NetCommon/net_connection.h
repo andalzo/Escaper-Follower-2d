@@ -250,7 +250,7 @@ namespace Simulation2d
 						else
 						{
 							// TODO: Change this with spdlog::error()
-							std::cout << "[" << id << "] Read Header Fail.\n";
+							std::cout << "[" << id << "] Read Header Fail.\nMessage: " << ec.message() << "\n";
 							m_socket.close();
 						}
 					}

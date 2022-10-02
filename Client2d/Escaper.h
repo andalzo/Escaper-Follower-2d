@@ -7,14 +7,14 @@
 
 namespace Simulation2d::Net
 {
-	enum EscaperUserEntry : uint8_t
+	enum EscaperMissions
 	{
-		ManualEntry = 1,
-		RandomEntry = 2,
-		TestSimulation = 3
+		WayPointMission,
+		EscapeMission,
+		DestroyMission
 	};
 
-	class Escaper : public olc::PixelGameEngine, public client_interface<MsgTypes>
+	class Escaper : public olc::PixelGameEngine, public client_interface<SimMsg>
 	{
 	public: //Methods
 		Escaper();
@@ -25,19 +25,43 @@ namespace Simulation2d::Net
 
 	private: // Members
 		std::unordered_map<uint32_t, Flight::Object2d> m_mapObjects;
-		uint32_t m_nDroneId = 0;
+		
+		uint32_t m_nObjectId = 0;
 		Flight::Object2d m_sObject2dDesc;
+		EscaperMissions m_ActiveMission = EscaperMissions::WayPointMission;
+
+
 		bool m_bWaitingForConnection = true;
 		bool m_bWaitingForUserEntry = true;
+		bool m_bIsTest = false;
+		bool m_bIsTestWayPoint = false;
+		
 		Flight::WayPointMission m_WayPointMission;
 		Flight::EscapeMission m_EscapeMission;
+		
+
 		olc::TileTransformedView tv;
 		olc::vi2d m_vWorldSize = { Flight::World_X_Limit, Flight::World_Y_Limit };
 
-		void HandleManualUserEntry();
-		void HandleRandomUserEntry();
-		void HandleSimulationEntry();
-		void HandleUserEntryStartSimulation();
+		void HandleIncomingMessages();
+		
+		void AssignObjectID(const uint32_t& id);
+
+		void OnWayPointMission();
+		void OnEscapeMission();
+		void OnDestroyMission();
+		void DrawWorldObjects();
+
+		void HandleUserEntryWayPoint();
+		void HandleManualUserEntryWayPoint();
+		void HandleRandomUserEntryWayPoint();
+		void HandleSimulationEntryWayPoint();
+
+		void HandleUserEntryEscape();
+
+		void HandleRandomWayPoint(const int& limBelow, const int& limUpper);
+
+		void StartSimulation();
 	};
 }
 

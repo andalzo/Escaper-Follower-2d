@@ -26,9 +26,6 @@
     <ClCompile Include="ForceFollowMission.cpp">
       <Filter>Follower\Missions</Filter>
     </ClCompile>
-    <ClCompile Include="PounceMission.cpp">
-      <Filter>Follower\Missions</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Follower.h">
@@ -58,9 +55,6 @@
     <ClInclude Include="ForceFollowMission.h">
       <Filter>Follower\Missions</Filter>
     </ClInclude>
-    <ClInclude Include="PounceMission.h">
-      <Filter>Follower\Missions</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Escaper">
@@ -77,9 +71,6 @@
     </Filter>
     <Filter Include="Follower\Missions">
       <UniqueIdentifier>{c6c19022-8fe0-459e-a733-3587f0335bc1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Follower\Utility">
-      <UniqueIdentifier>{2b2ed2db-2aa1-4c8c-b1e8-32381bb06cda}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common">
       <UniqueIdentifier>{f6a9da02-860e-47ba-b1b6-31ded6f49b0f}</UniqueIdentifier>

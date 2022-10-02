@@ -150,7 +150,6 @@
     <ClCompile Include="ForceFollowMission.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="olcPGEX_TransformedView.cpp" />
-    <ClCompile Include="PounceMission.cpp" />
     <ClCompile Include="WaypointCreator.cpp" />
     <ClCompile Include="WayPointMission.cpp" />
   </ItemGroup>
@@ -162,7 +161,6 @@
     <ClInclude Include="ForceFollowMission.h" />
     <ClInclude Include="olcPGEX_TransformedView.h" />
     <ClInclude Include="olcPixelGameEngine.h" />
-    <ClInclude Include="PounceMission.h" />
     <ClInclude Include="WaypointCreator.h" />
     <ClInclude Include="WayPointMission.h" />
   </ItemGroup>
