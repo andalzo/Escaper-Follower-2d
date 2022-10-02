@@ -63,6 +63,7 @@ namespace Simulation2d::Net
 		void OnObserveMission();
 		void OnForceFollowMission();
 		void OnPounceMission();
+		bool IsTargetInPounceArea();
 
 		void DrawWorldObjects(const bool& b);
 

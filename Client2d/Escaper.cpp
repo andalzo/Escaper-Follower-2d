@@ -134,7 +134,80 @@ namespace Simulation2d::Net
 
 	void Escaper::HandleIncomingMessages()
 	{
+		if (IsConnected())
+		{
+			while (!InComing().empty())
+			{
+				message<SimMsg> msg = InComing().pop_front().msg;
+				switch (msg.header.id)
+				{
+				case SimMsg::Client_Accepted:
+				{
+					std::cout << "Server accepted client - you're in!\n";
+					message<SimMsg> msg;
+					msg.header.id = SimMsg::Client_RegisterWithServer;
+					msg << m_sObject2dDesc;
+					Send(msg);
+					break;
+				}
+				case SimMsg::Client_AssignID:
+				{
+					msg >> m_nObjectId;
+					std::cout << "Assigned Client ID: " << m_nObjectId << "\n";
+					break;
+				}
 
+				case SimMsg::Simulation_AddObject:
+				{
+					Flight::Object2d sNewObject;
+					msg >> sNewObject;
+					if (sNewObject.nUniqueID == m_nObjectId)
+					{
+						//Now we exist in the game world
+						m_bWaitingForConnection = false;
+						m_sObject2dDesc = sNewObject;
+						AssignObjectID(m_sObject2dDesc.nUniqueID);
+						break;
+					}
+
+					m_mapObjects.insert_or_assign(sNewObject.nUniqueID, sNewObject);
+					break;
+				}
+				case SimMsg::Simulation_RemoveObject:
+				{
+					uint32_t nRemovalId = 0;
+					msg >> nRemovalId;
+					m_mapObjects.erase(nRemovalId);
+					break;
+				}
+				case SimMsg::Simulation_UpdateObject:
+				{
+					Flight::Object2d sUpdatedObject;
+					msg >> sUpdatedObject;
+					m_mapObjects.insert_or_assign(sUpdatedObject.nUniqueID, sUpdatedObject);
+					break;
+				}
+				case SimMsg::Client_PounceStart:
+				{
+					uint32_t id;
+					msg >> id;
+					m_mapObjects.at(id).bPounced = true;
+				}
+				case SimMsg::Client_PounceCancel:
+				{
+					uint32_t id;
+					msg >> id;
+					m_mapObjects.at(id).bPounced = false;
+				}
+				case SimMsg::Client_PounceSuccesful:
+				{
+					uint32_t id;
+					msg >> id;
+					m_mapObjects.erase(id);
+				}
+				}
+			}
+		}
 	}
 	void Escaper::AssignObjectID(const uint32_t& id)
 	{

@@ -120,12 +120,6 @@ namespace Simulation2d::Net
 
 			case SimMsg::Simulation_UpdateObject:
 			{
-				//We get the description of object
-				Flight::Object2d sObject2dDesc;
-				msg >> sObject2dDesc;
-				//We update the map objects, it is necessary to monitor server status
-				m_mapObjects.insert_or_assign(sObject2dDesc.nUniqueID, sObject2dDesc);
-				
 				// Simply bounce update to everyone except incoming client
 				MessageAllClients(msg, client);
 				break;

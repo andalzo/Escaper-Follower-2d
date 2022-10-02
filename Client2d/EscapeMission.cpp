@@ -15,7 +15,7 @@ namespace Simulation2d::Flight
 			m_bIsConstantDirection = false;
 			PossibleDirection.x = Utility::RandomNumber(-1, 1);
 			PossibleDirection.y = Utility::RandomNumber(-1, 1);
-			m_ptrObject2d->SpeedPerFrame = Utility::RandomNumber(1, 2);
+			m_ptrObject2d->SpeedPerFrame = Utility::RandomNumber(1,7);
 			m_ConstantDirectionFrameCounter = 0;
 			if (PossibleDirection == olc::vf2d{0, 0})
 			{

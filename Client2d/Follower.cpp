@@ -152,6 +152,24 @@ namespace Simulation2d::Net
 						m_mapObjects.insert_or_assign(sUpdatedObject.nUniqueID, sUpdatedObject);
 						break;
 					}
+					case SimMsg::Client_PounceStart:
+					{
+						uint32_t id;
+						msg >> id;
+						m_mapObjects.at(id).bPounced = true;
+					}
+					case SimMsg::Client_PounceCancel:
+					{
+						uint32_t id;
+						msg >> id;
+						m_mapObjects.at(id).bPounced = false;
+					}
+					case SimMsg::Client_PounceSuccesful:
+					{
+						uint32_t id;
+						msg >> id;
+						m_mapObjects.erase(id);
+					}
 				}
 			}
 		}
@@ -174,25 +192,21 @@ namespace Simulation2d::Net
 			return;
 		}
 
-		float fDistanceToNearest = 0.0f;
-		std::optional<uint32_t> nPossibleTargetID;
+		uint32_t nPossibleTargetID;
+		bool isEscaperFound = false;
 		for (const auto& object : m_mapObjects)
 		{
-			if (object.second.type != Flight::Object2d::Type::Follower)
+			if (object.second.type == Flight::Object2d::Type::Escaper)
 			{
-				float fPossibleDistancetoNearest = (object.second.Position - m_mapObjects.at(m_nObjectId).Position).mag2();
-				if (fDistanceToNearest >= fPossibleDistancetoNearest)
-				{
-					fDistanceToNearest = fPossibleDistancetoNearest;
-					nPossibleTargetID = object.second.nUniqueID;
-				}
+				bool isEscaperFound = true;
+				nPossibleTargetID = object.second.nUniqueID;
 			}
 		}
 
-		if (nPossibleTargetID.has_value())
+		if (isEscaperFound)
 		{
 			m_ActiveMission = FollowerMissions::ForceFollowMission;
-			m_nTargetObjectID = nPossibleTargetID.value();
+			m_nTargetObjectID = nPossibleTargetID;
 			return;
 		}
 		else
@@ -210,11 +224,17 @@ namespace Simulation2d::Net
 		m_ForceFollowMission.SetTargetPosition(m_mapObjects.at(m_nTargetObjectID).Position);
 		
 		m_ForceFollowMission.Execute();
+		
 		if (m_ForceFollowMission.IsForceFollowSucces())
 		{
 			m_ActiveMission = FollowerMissions::PounceMission;
 			m_mapObjects.at(m_nTargetObjectID).bPounced = true;
-			//TODO: Send pounce start information to server
+
+			message<SimMsg> msgPounceStarted;
+			msgPounceStarted.header.id = SimMsg::Client_PounceStart;
+			msgPounceStarted << m_nTargetObjectID;
+			Send(msgPounceStarted);
+
 			m_tpPounceStart = std::chrono::system_clock::now();
 		}
 		else
@@ -229,10 +249,15 @@ namespace Simulation2d::Net
 
 		std::chrono::time_point<std::chrono::system_clock> tpPossiblePounceEnd = std::chrono::system_clock::now();
 		int64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(tpPossiblePounceEnd - m_tpPounceStart).count();
-		if (duration >= 240)
+		if (duration >= 240 && IsTargetInPounceArea())
 		{
 			m_mapObjects.at(m_nTargetObjectID).bPounceSucces = true;
-			//TODO: Send pounce finish information to server
+			
+			message<SimMsg> msgPounceFinished;
+			msgPounceFinished.header.id = SimMsg::Client_PounceSuccesful;
+			msgPounceFinished << m_nTargetObjectID;
+			Send(msgPounceFinished);
+			
 			m_ActiveMission = FollowerMissions::ObserveMission;
 			return;
 		}
@@ -240,7 +265,24 @@ namespace Simulation2d::Net
 		{
 			m_ForceFollowMission.SetTargetPosition(m_mapObjects.at(m_nTargetObjectID).Position);
 			m_ForceFollowMission.Execute();
+
+			if (!IsTargetInPounceArea())
+			{
+				m_ActiveMission = FollowerMissions::ForceFollowMission;
+				message<SimMsg> msgPounceCanceled;
+				msgPounceCanceled.header.id = SimMsg::Client_PounceCancel;
+				msgPounceCanceled << m_nTargetObjectID;
+				Send(msgPounceCanceled);
+
+			}
 		}
+	}
+
+	bool Follower::IsTargetInPounceArea()
+	{
+		olc::vf2d vf2dDistance = m_mapObjects.at(m_nObjectId).Position - m_mapObjects.at(m_nTargetObjectID).Position;
+		float fDistance = vf2dDistance.mag();
+		return (fDistance <= 3 * m_mapObjects.at(m_nObjectId).fRadius);
 	}
 
 	void Follower::DrawWorldObjects(const bool& bIsDrawTargetRoute)
@@ -261,8 +303,10 @@ namespace Simulation2d::Net
 		for (const auto& object : m_mapObjects)
 		{
 			
-			tv.DrawCircle(object.second.Position, object.second.fRadius, object.second.Color);
 
+			
+			tv.DrawCircle(object.second.Position, object.second.fRadius, object.second.Color);
+			
 			if (object.second.Velocity.mag2() > 0)
 			{
 				tv.DrawLine(object.second.Position,
