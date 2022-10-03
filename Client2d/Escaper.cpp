@@ -12,7 +12,7 @@ namespace Simulation2d::Net
 	{
 		tv = olc::TileTransformedView({ ScreenWidth(), ScreenHeight() }, { 1, 1 });
 
-		if (Connect("192.168.1.51", 60000))
+		if (Connect("127.0.0.1", 60000))
 		{
 			return true;
 		}
@@ -192,18 +192,21 @@ namespace Simulation2d::Net
 					uint32_t id;
 					msg >> id;
 					m_mapObjects.at(id).bPounced = true;
+					break;
 				}
 				case SimMsg::Client_PounceCancel:
 				{
 					uint32_t id;
 					msg >> id;
 					m_mapObjects.at(id).bPounced = false;
+					break;
 				}
 				case SimMsg::Client_PounceSuccesful:
 				{
 					uint32_t id;
 					msg >> id;
 					m_mapObjects.erase(id);
+					break;
 				}
 				}
 			}
@@ -234,7 +237,7 @@ namespace Simulation2d::Net
 			return;
 		}
 
-		m_WayPointMission.Execute();
+		m_EscapeMission.Execute();
 	}
 	void Escaper::OnDestroyMission()
 	{

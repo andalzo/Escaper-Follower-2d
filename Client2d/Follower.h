@@ -46,6 +46,7 @@ namespace Simulation2d::Net
 		bool m_bIsTestForceFollow = true;
 		bool m_bWaitingForUserEntry = true;
 		bool m_bWaitingForConnection = true;
+		bool m_bIsTargetLocationArrived = false;
 
 		std::string m_strMode;
 		

@@ -14,7 +14,7 @@ namespace Simulation2d::Net
 	{
 		tv = olc::TileTransformedView({ ScreenWidth(), ScreenHeight() }, { 1, 1 });
 
-		if (Connect("192.168.1.51", 60000))
+		if (Connect("127.0.0.1", 60000))
 		{
 			return true;
 		}
@@ -55,6 +55,8 @@ namespace Simulation2d::Net
 		}
 		else
 		{
+			//We need to assume that target location is not arrived in each frame
+			m_bIsTargetLocationArrived = false;
 			//Handle Incoming Messages
 			HandleIncomingMessages();
 
@@ -65,6 +67,7 @@ namespace Simulation2d::Net
 				return true;
 			}
 
+
 			//State Machine
 			switch (m_ActiveMission)
 			{
@@ -72,10 +75,16 @@ namespace Simulation2d::Net
 				OnObserveMission();
 				break;
 			case FollowerMissions::ForceFollowMission:
-				OnForceFollowMission();
+				if (m_bIsTargetLocationArrived)
+				{
+					OnForceFollowMission();
+				}		
 				break;
 			case FollowerMissions::PounceMission:
-				OnPounceMission();
+				if (m_bIsTargetLocationArrived)
+				{
+					OnPounceMission();
+				}
 				break;
 			default:
 				std::cerr << "\n[ERROR]:Impossible active mission state for follower.\n";
@@ -143,13 +152,22 @@ namespace Simulation2d::Net
 						uint32_t nRemovalId = 0;
 						msg >> nRemovalId;
 						m_mapObjects.erase(nRemovalId);
+						if (nRemovalId == m_nTargetObjectID)
+						{
+							m_ActiveMission = FollowerMissions::ObserveMission;
+						}
 						break;
 					}
 					case SimMsg::Simulation_UpdateObject:
 					{
+
 						Flight::Object2d sUpdatedObject;
 						msg >> sUpdatedObject;
 						m_mapObjects.insert_or_assign(sUpdatedObject.nUniqueID, sUpdatedObject);
+						if (sUpdatedObject.nUniqueID == m_nTargetObjectID)
+						{
+							m_bIsTargetLocationArrived = true;
+						}
 						break;
 					}
 					case SimMsg::Client_PounceStart:
@@ -157,18 +175,21 @@ namespace Simulation2d::Net
 						uint32_t id;
 						msg >> id;
 						m_mapObjects.at(id).bPounced = true;
+						break;
 					}
 					case SimMsg::Client_PounceCancel:
 					{
 						uint32_t id;
 						msg >> id;
 						m_mapObjects.at(id).bPounced = false;
+						break;
 					}
 					case SimMsg::Client_PounceSuccesful:
 					{
 						uint32_t id;
 						msg >> id;
 						m_mapObjects.erase(id);
+						break;
 					}
 				}
 			}
@@ -198,7 +219,7 @@ namespace Simulation2d::Net
 		{
 			if (object.second.type == Flight::Object2d::Type::Escaper)
 			{
-				bool isEscaperFound = true;
+				isEscaperFound = true;
 				nPossibleTargetID = object.second.nUniqueID;
 			}
 		}
@@ -270,6 +291,7 @@ namespace Simulation2d::Net
 			{
 				m_ActiveMission = FollowerMissions::ForceFollowMission;
 				message<SimMsg> msgPounceCanceled;
+			
 				msgPounceCanceled.header.id = SimMsg::Client_PounceCancel;
 				msgPounceCanceled << m_nTargetObjectID;
 				Send(msgPounceCanceled);
